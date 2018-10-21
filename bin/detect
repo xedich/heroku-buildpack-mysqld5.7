@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if grep -q mysql $1/config/database.yml; then
+  echo "App needs MySQL Server"
+  exit 0
+else
+  exit 1
+fi
