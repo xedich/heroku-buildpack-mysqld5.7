@@ -3,5 +3,5 @@
 cat << EOF
 ---
 default_process_types:
-  mysql: /etc/init.d/mysql.server start
+  mysql: cd $1/.heroku/mysql-8.0.12-linux-glibc2.12-x86_64 && LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld --user=mysql --datadir=data
 EOF
