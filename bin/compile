@@ -1,27 +1,78 @@
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir> <env-dir>
+
+### Configure environment
+
+set -o errexit    # always exit on error
+set -o pipefail   # don't ignore exit codes when piping output
+set -o nounset    # fail on unset variables
+unset GIT_DIR     # Avoid GIT_DIR leak from previous build steps
+
+### Configure directories
+
+BUILD_DIR=${1:-}
+CACHE_DIR=${2:-}
+ENV_DIR=${3:-}
+BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
+
+### Create 
+
+mkdir -p "$BUILD_DIR/.heroku/"
+cd "$BUILD_DIR"
+
+LOG_FILE='/tmp/mysqld-build-log.txt'
+echo "" > "$LOG_FILE"
+
+
+
 echo '-----> Installing MySQL Server v8.0'
 
-echo '       * Creating user and group'
+
+
+# ------------------------------------------------------------
+if [ ! -e "$CACHE_DIR/mysql-8.0.12-linux-glibc2.12-x86_64.tar.xz" ]; then
+  echo '       * Downloading source code'
+  curl -# -L -o "$CACHE_DIR/mysql-8.0.12-linux-glibc2.12-x86_64.tar.xz" 'https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.12-linux-glibc2.12-x86_64.tar.xz'
+fi
+
+if [ ! -e "$CACHE_DIR/libaio.so.1" ]; then
+  echo '       * Downloading libraries'
+  cp "$BP_DIR"/lib/lib*.so* "$CACHE_DIR"
+fi
+# ------------------------------------------------------------
+
+
+
+# ------------------------------------------------------------
+echo '       * Installing'
+mkdir -p "$BUILD_DIR/.heroku/"
+cd "$BUILD_DIR/.heroku/"
+tar xJf "$CACHE_DIR/mysql-8.0.12-linux-glibc2.12-x86_64.tar.xz"
+cd mysql-8.0.12-linux-glibc2.12-x86_64
+cp "$CACHE_DIR"/lib*.so* lib
+# ------------------------------------------------------------
+
+
+
+# ------------------------------------------------------------
+echo '       * Creating user/group'
 groupadd mysql
 useradd -r -g mysql -s /bin/false mysql
+# ------------------------------------------------------------
 
-echo '       * Downloading source code and libraries'
-curl -# -L -o '/tmp/libaio1_0.3.110-5_amd64.deb' 'http://mirrors.kernel.org/ubuntu/pool/main/liba/libaio/libaio1_0.3.110-5_amd64.deb'
-curl -# -L -o '/tmp/libnuma1_2.0.11-2.1_amd64.deb' 'http://mirrors.kernel.org/ubuntu/pool/main/n/numactl/libnuma1_2.0.11-2.1_amd64.deb'
-curl -# -L -o '/tmp/mysql-8.0.12-linux-glibc2.12-x86_64.tar.xz' 'https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.12-linux-glibc2.12-x86_64.tar.xz'
 
-echo '       * Installing libraries'
-dpkg -i /tmp/libaio1_0.3.110-5_amd64.deb
-dpkg -i /tmp/libnuma1_2.0.11-2.1_amd64.deb
 
-echo '       * Decompressing source code'
-tar -C /usr/local -xJf /tmp/mysql-8.0.12-linux-glibc2.12-x86_64.tar.xz
-ln -s /usr/local/mysql-8.0.12-linux-glibc2.12-x86_64 /usr/local/mysql
-
+# ------------------------------------------------------------
 echo '       * Setup'
-cd /usr/local/mysql
-mkdir mysql-files
+
+mkdir -p mysql-files
 chown mysql:mysql mysql-files
 chmod 750 mysql-files
-bin/mysqld --initialize-insecure --user=mysql
-bin/mysql_ssl_rsa_setup
-cp support-files/mysql.server /etc/init.d/mysql.server
+
+mkdir -p data
+chown mysql:mysql data
+chmod 750 data
+
+LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld --initialize-insecure --user=mysql  --datadir=data
+LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysql_ssl_rsa_setup --datadir=data
+# ------------------------------------------------------------
