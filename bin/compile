@@ -1,70 +1,113 @@
 #!/usr/bin/env bash
 # bin/compile <build-dir> <cache-dir> <env-dir>
 
-### Configure environment
 
+
+# ------------------------------------------------------------
+# Configure directories
+# ------------------------------------------------------------
+BUILD_DIR=${1:-}
+CACHE_DIR=${2:-}
+ENV_DIR=${3:-}
+TMP_DIR=$(mktemp -d)
+BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
+PROFILE_SCRIPT="$BUILD_DIR/.profile.d/mysql.sh"
+DB_NAME=$(cat /dev/urandom | tr -dc "[:alpha:]" | head -c 16)
+# ------------------------------------------------------------
+
+
+
+# ------------------------------------------------------------
+# Configure environment
+# ------------------------------------------------------------
 set -o errexit    # always exit on error
 set -o pipefail   # don't ignore exit codes when piping output
 set -o nounset    # fail on unset variables
 unset GIT_DIR     # Avoid GIT_DIR leak from previous build steps
+# ------------------------------------------------------------
 
-### Configure directories
-
-BUILD_DIR=${1:-}
-CACHE_DIR=${2:-}
-ENV_DIR=${3:-}
-BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
-
-### Create 
-
-LOG_FILE='/tmp/mysqld-build-log.txt'
-echo "" > "$LOG_FILE"
-
-VERSION=mysql-8.0.12-linux-glibc2.12-x86_64
 
 
 # ------------------------------------------------------------
-cd $CACHE_DIR
-if [ ! -e "$VERSION" ]; then
+VERSION=mysql-8.0.12-linux-glibc2.12-x86_64
+# ------------------------------------------------------------
+
+
+
+# ------------------------------------------------------------
+download_and_unpack() {
+# ------------------------------------------------------------
   echo '       * Downloading source code'
-  curl -# -L -o "/tmp/$VERSION.tar.xz" "https://dev.mysql.com/get/Downloads/MySQL-8.0/$VERSION.tar.xz"
+  curl -# -L -o "$TMP_DIR/$VERSION.tar.xz" "https://dev.mysql.com/get/Downloads/MySQL-8.0/$VERSION.tar.xz"
 
   echo '       * Unpacking'
-  tar xJf "/tmp/$VERSION.tar.xz"
-  cp "$BP_DIR"/lib/lib*.so* "$VERSION/lib"  
+  tar -C "$CACHE_DIR" -xJf "$TMP_DIR/$VERSION.tar.xz"
+  cp "$BP_DIR"/lib/lib*.so* "$CACHE_DIR/$VERSION/lib"  
+}
+# ------------------------------------------------------------
+
+
+
+# ------------------------------------------------------------
+install() {
+# ------------------------------------------------------------
+  echo '       * Installing'
+  mkdir -p "$BUILD_DIR/.heroku/vendor"
+  cp -r "$CACHE_DIR/$VERSION" "$BUILD_DIR/.heroku/vendor/mysql"
+}
+# ------------------------------------------------------------
+
+
+
+
+# ------------------------------------------------------------
+configure() {
+# ------------------------------------------------------------
+  echo '       * Setup'
+
+  cd "$BUILD_DIR/.heroku/vendor/mysql"
+
+  mkdir -p mysql-files
+  chmod 750 mysql-files
+
+  mkdir -p data
+  chmod 750 data
+
+  LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld --initialize-insecure  --datadir=data
+  LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysql_ssl_rsa_setup --datadir=data
+}
+# ------------------------------------------------------------
+
+
+
+
+# ------------------------------------------------------------
+write_profiled_script() {
+# ------------------------------------------------------------
+  echo '       * Creating profile.d script'
+  mkdir -p "$BUILD_DIR/.profile.d"
+  echo "cd $BUILD_DIR/.heroku/vendor/mysql" > $PROFILE_SCRIPT
+  echo 'LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-}' >> $PROFILE_SCRIPT
+  echo 'bin/mysqld_safe --datadir=data &' >> $PROFILE_SCRIPT
+  echo 'sleep 2' >> $PROFILE_SCRIPT
+  echo "bin/mysqladmin create $DB_NAME" >> $PROFILE_SCRIPT
+  echo "export DATABASE_URL=mysql2://root@localhost/$DB_NAME" >> $PROFILE_SCRIPT
+}
+# ------------------------------------------------------------
+
+
+
+
+##############################################################
+
+if [ ! -e "$CACHE_DIR/$VERSION" ]; then
+  download_and_unpack
 fi
-# ------------------------------------------------------------
+
+install
+configure
+write_profiled_script
+
+##############################################################
 
 
-
-# ------------------------------------------------------------
-echo '       * Installing'
-mkdir -p "$BUILD_DIR/.heroku/vendor"
-cp -r "$VERSION" "$BUILD_DIR/.heroku/vendor"
-# ------------------------------------------------------------
-
-
-
-# ------------------------------------------------------------
-echo '       * Setup'
-
-cd "$BUILD_DIR/.heroku/vendor/$VERSION"
-
-mkdir -p mysql-files
-chmod 750 mysql-files
-
-mkdir -p data
-chmod 750 data
-
-LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld --initialize-insecure  --datadir=data
-LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysql_ssl_rsa_setup --datadir=data
-# ------------------------------------------------------------
-
-
-
-# ------------------------------------------------------------
-echo '       * Starting MySQL Server'
-LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld_safe --datadir=data &
-sleep 5
-ps xa
-# ------------------------------------------------------------
