@@ -17,19 +17,21 @@ BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
 
 ### Create 
 
-mkdir -p "$BUILD_DIR/.heroku/vendor"
-cd "$BUILD_DIR/vendor"
-
 LOG_FILE='/tmp/mysqld-build-log.txt'
 echo "" > "$LOG_FILE"
 
-MYSQL_TAR_FILE=mysql-8.0.12-linux-glibc2.12-x86_64.tar.xz
+VERSION=mysql-8.0.12-linux-glibc2.12-x86_64
 
 
 # ------------------------------------------------------------
-if [ ! -e "$CACHE_DIR/$MYSQL_TAR_FILE" ]; then
+cd $CACHE_DIR
+if [ ! -e "$VERSION" ]; then
   echo '       * Downloading source code'
-  curl -# -L -o "$CACHE_DIR/$MYSQL_TAR_FILE" "https://dev.mysql.com/get/Downloads/MySQL-8.0/$MYSQL_TAR_FILE"
+  curl -# -L -o "/tmp/$VERSION.tar.xz" "https://dev.mysql.com/get/Downloads/MySQL-8.0/$VERSION.tar.xz"
+
+  echo '       * Unpacking'
+  tar xJf "/tmp/$VERSION.tar.xz"
+  cp "$BP_DIR"/lib/lib*.so* "$VERSION/lib"  
 fi
 # ------------------------------------------------------------
 
@@ -37,15 +39,16 @@ fi
 
 # ------------------------------------------------------------
 echo '       * Installing'
-tar xJf "$CACHE_DIR/$MYSQL_TAR_FILE"
-cd mysql-8.0.12-linux-glibc2.12-x86_64
-cp "$BP_DIR"/lib/lib*.so* lib
+mkdir -p "$BUILD_DIR/.heroku/vendor"
+cp -r "$VERSION" "$BUILD_DIR/.heroku/vendor"
 # ------------------------------------------------------------
 
 
 
 # ------------------------------------------------------------
 echo '       * Setup'
+
+cd "$BUILD_DIR/.heroku/vendor/$VERSION"
 
 mkdir -p mysql-files
 chmod 750 mysql-files
