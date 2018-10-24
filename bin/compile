@@ -17,8 +17,8 @@ BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
 
 ### Create 
 
-mkdir -p "$BUILD_DIR/.heroku/"
-cd "$BUILD_DIR"
+mkdir -p "$BUILD_DIR/.heroku/vendor"
+cd "$BUILD_DIR/vendor"
 
 LOG_FILE='/tmp/mysqld-build-log.txt'
 echo "" > "$LOG_FILE"
@@ -55,4 +55,11 @@ chmod 750 data
 
 LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld --initialize-insecure  --datadir=data
 LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysql_ssl_rsa_setup --datadir=data
+# ------------------------------------------------------------
+
+
+
+# ------------------------------------------------------------
+echo '       * Starting MySQL Server'
+LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld --datadir=data &
 # ------------------------------------------------------------
