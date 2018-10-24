@@ -65,5 +65,6 @@ LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysql_ssl_rsa_setup --datadir=data
 # ------------------------------------------------------------
 echo '       * Starting MySQL Server'
 LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld_safe --datadir=data &
-sleep 3
+sleep 5
+ps xa
 # ------------------------------------------------------------
