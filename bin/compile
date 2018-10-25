@@ -12,7 +12,7 @@ ENV_DIR=${3:-}
 TMP_DIR=$(mktemp -d)
 BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
 PROFILE_SCRIPT="$BUILD_DIR/.profile.d/mysql.sh"
-DB_NAME=$(cat /dev/urandom | tr -dc "[:alpha:]" | head -c 16)
+DB_NAME=$(openssl rand -hex 8)
 # ------------------------------------------------------------
 
 
