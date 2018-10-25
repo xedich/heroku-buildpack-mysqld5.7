@@ -105,11 +105,13 @@ launch_server() {
 
   cd $BUILD_DIR/.heroku/vendor/mysql
   
-  LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld --datadir=$BUILD_DIR/.heroku/vendor/mysql/data &
+  LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld --datadir=$BUILD_DIR/.heroku/vendor/mysql/data --bind-address=127.0.0.1 &
   sleep 2
   LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqladmin -uroot create $DB_NAME
   
-  export DATABASE_URL=mysql2://root@localhost/$DB_NAME
+  export DATABASE_URL=mysql2://root@127.0.0.1/$DB_NAME
+
+  ps x
 }
 # ------------------------------------------------------------
 
