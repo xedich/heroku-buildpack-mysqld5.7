@@ -130,7 +130,7 @@ install
 ls -l $CACHE_DIR
 
 configure
-launch_server
+#launch_server
 #write_profiled_script
 
 #source $PROFILE_SCRIPT
