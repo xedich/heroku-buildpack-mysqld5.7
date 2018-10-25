@@ -100,7 +100,7 @@ write_profiled_script() {
 
 ##############################################################
 
-if [ ! -e "$CACHE_DIR/$VERSION" ]; then
+if [ ! -d "$CACHE_DIR/$VERSION" ]; then
   download_and_unpack
 fi
 
