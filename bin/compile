@@ -80,46 +80,7 @@ configure() {
 
 
 
-# ------------------------------------------------------------
-write_profiled_script() {
-# ------------------------------------------------------------
-  echo '       * Creating profile.d script'
-  mkdir -p "$BUILD_DIR/.profile.d"
-  echo "Starting MySQL Server" > $PROFILE_SCRIPT
-  echo "cd $BUILD_DIR/.heroku/vendor/mysql" >> $PROFILE_SCRIPT
-  echo 'LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld_safe --datadir=data &' >> $PROFILE_SCRIPT
-  echo 'sleep 2' >> $PROFILE_SCRIPT
-  echo "LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqladmin -uroot create $DB_NAME" >> $PROFILE_SCRIPT
-  echo "export DATABASE_URL=mysql2://root@localhost/$DB_NAME" >> $PROFILE_SCRIPT
-}
-# ------------------------------------------------------------
-
-
-
-# ------------------------------------------------------------
-launch_server() {
-# ------------------------------------------------------------
-  echo '       * Starting MySQL Server'
-  
-  DB_NAME=$(openssl rand -hex 8)
-
-  cd $BUILD_DIR/.heroku/vendor/mysql
-  
-  LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld --datadir=$BUILD_DIR/.heroku/vendor/mysql/data --bind-address=127.0.0.1 &
-  sleep 2
-  LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqladmin -uroot create $DB_NAME
-  
-  export DATABASE_URL=mysql2://root@127.0.0.1/$DB_NAME
-
-  ps x
-}
-# ------------------------------------------------------------
-
-
-
 ##############################################################
-
-ls -l $CACHE_DIR
 
 if [ ! -d $CACHE_DIR/$VERSION ]; then
   download_and_unpack
@@ -127,15 +88,7 @@ fi
 
 install
 
-ls -l $CACHE_DIR
-
 configure
-#launch_server
-#write_profiled_script
-
-#source $PROFILE_SCRIPT
-
-#echo '       * Done'
 
 ##############################################################
 

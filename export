@@ -1,10 +1,11 @@
 echo '       * Starting MySQL Server'
 
 DB_NAME=$(openssl rand -hex 8)
+DB_DIR=/app/.heroku/vendor/mysql
 
-cd /app/.heroku/vendor/mysql
+cd $DB_DIR
   
-LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld --datadir=/app/.heroku/vendor/mysql/data --bind-address=127.0.0.1 &
+LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld_safe --datadir=$DB_DIR/data --bind-address=127.0.0.1 &
 sleep 2
 LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqladmin -uroot create $DB_NAME
   
