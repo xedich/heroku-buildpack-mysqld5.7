@@ -72,8 +72,12 @@ configure() {
   mkdir -p data
   chmod 750 data
 
-  LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld --initialize-insecure  --datadir=data
-  LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysql_ssl_rsa_setup --datadir=data
+  export LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-}
+
+  bin/mysqld --initialize-insecure  --datadir=data
+  bin/mysql_ssl_rsa_setup --datadir=data
+
+  export DATABASE_URL=mysql2://user:password@localhost/tempdb
 }
 # ------------------------------------------------------------
 
