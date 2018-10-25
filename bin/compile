@@ -90,7 +90,7 @@ write_profiled_script() {
   echo "cd $BUILD_DIR/.heroku/vendor/mysql" >> $PROFILE_SCRIPT
   echo 'LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld_safe --datadir=data &' >> $PROFILE_SCRIPT
   echo 'sleep 2' >> $PROFILE_SCRIPT
-  echo "LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqladmin create $DB_NAME" >> $PROFILE_SCRIPT
+  echo "LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqladmin -uroot create $DB_NAME" >> $PROFILE_SCRIPT
   echo "export DATABASE_URL=mysql2://root@localhost/$DB_NAME" >> $PROFILE_SCRIPT
 }
 # ------------------------------------------------------------
@@ -100,13 +100,15 @@ write_profiled_script() {
 
 ##############################################################
 
-if [ ! -d "$CACHE_DIR/$VERSION" ]; then
+if [ ! -d $CACHE_DIR/$VERSION ]; then
   download_and_unpack
 fi
 
 install
 configure
 write_profiled_script
+
+echo '       * Done'
 
 ##############################################################
 
