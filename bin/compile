@@ -86,11 +86,11 @@ write_profiled_script() {
 # ------------------------------------------------------------
   echo '       * Creating profile.d script'
   mkdir -p "$BUILD_DIR/.profile.d"
-  echo "cd $BUILD_DIR/.heroku/vendor/mysql" > $PROFILE_SCRIPT
-  echo 'LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-}' >> $PROFILE_SCRIPT
-  echo 'bin/mysqld_safe --datadir=data &' >> $PROFILE_SCRIPT
+  echo "Starting MySQL Server" > $PROFILE_SCRIPT
+  echo "cd $BUILD_DIR/.heroku/vendor/mysql" >> $PROFILE_SCRIPT
+  echo 'LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld_safe --datadir=data &' >> $PROFILE_SCRIPT
   echo 'sleep 2' >> $PROFILE_SCRIPT
-  echo "bin/mysqladmin create $DB_NAME" >> $PROFILE_SCRIPT
+  echo "LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqladmin create $DB_NAME" >> $PROFILE_SCRIPT
   echo "export DATABASE_URL=mysql2://root@localhost/$DB_NAME" >> $PROFILE_SCRIPT
 }
 # ------------------------------------------------------------
