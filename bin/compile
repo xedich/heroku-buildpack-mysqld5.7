@@ -108,6 +108,8 @@ install
 configure
 write_profiled_script
 
+source $PROFILE_SCRIPT
+
 echo '       * Done'
 
 ##############################################################
