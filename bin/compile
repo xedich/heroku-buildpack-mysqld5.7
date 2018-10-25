@@ -12,7 +12,6 @@ ENV_DIR=${3:-}
 TMP_DIR=$(mktemp -d)
 BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
 PROFILE_SCRIPT="$BUILD_DIR/.profile.d/mysql.sh"
-DB_NAME=$(openssl rand -hex 8)
 # ------------------------------------------------------------
 
 
@@ -97,20 +96,44 @@ write_profiled_script() {
 
 
 
+# ------------------------------------------------------------
+launch_server() {
+# ------------------------------------------------------------
+  echo '       * Starting MySQL Server'
+  
+  DB_NAME=$(openssl rand -hex 8)
+
+  cd $BUILD_DIR/.heroku/vendor/mysql
+  
+  LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqld --datadir=$BUILD_DIR/.heroku/vendor/mysql/data &
+  sleep 2
+  LD_LIBRARY_PATH=lib:${LD_LIBRARY_PATH:-} bin/mysqladmin -uroot create $DB_NAME
+  
+  export DATABASE_URL=mysql2://root@localhost/$DB_NAME
+}
+# ------------------------------------------------------------
+
+
 
 ##############################################################
+
+ls -l $CACHE_DIR
 
 if [ ! -d $CACHE_DIR/$VERSION ]; then
   download_and_unpack
 fi
 
 install
+
+ls -l $CACHE_DIR
+
 configure
-write_profiled_script
+launch_server
+#write_profiled_script
 
-source $PROFILE_SCRIPT
+#source $PROFILE_SCRIPT
 
-echo '       * Done'
+#echo '       * Done'
 
 ##############################################################
 
