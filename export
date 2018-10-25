@@ -10,5 +10,3 @@ bin/mysqld --datadir=$DB_DIR/data --bind-address=localhost &
 sleep 2
 bin/mysqladmin -uroot create tempdb
 bin/mysql -uroot -e "CREATE USER 'user'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'; GRANT ALL PRIVILEGES ON * . * TO 'user'@'localhost';"
-
-export DATABASE_URL=mysql2://user:password@localhost/tempdb

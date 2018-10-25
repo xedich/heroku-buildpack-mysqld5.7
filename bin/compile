@@ -19,10 +19,7 @@ PROFILE_SCRIPT="$BUILD_DIR/.profile.d/mysql.sh"
 # ------------------------------------------------------------
 # Configure environment
 # ------------------------------------------------------------
-set -o errexit    # always exit on error
-set -o pipefail   # don't ignore exit codes when piping output
-set -o nounset    # fail on unset variables
-unset GIT_DIR     # Avoid GIT_DIR leak from previous build steps
+set -eo pipefail   # don't ignore exit codes when piping output
 # ------------------------------------------------------------
 
 
@@ -77,7 +74,7 @@ configure() {
   bin/mysqld --initialize-insecure  --datadir=data
   bin/mysql_ssl_rsa_setup --datadir=data
 
-  export DATABASE_URL=mysql2://user:password@localhost/tempdb
+  sed -i -r 's/(test:.*$)/\1\n  url: mysql2:\/\/user:password@localhost\/tempdb/' $BUILD_DIR/config/database.yml
 }
 # ------------------------------------------------------------
 
@@ -93,6 +90,8 @@ fi
 install
 
 configure
+
+env | grep DATABASE_URL
 
 ##############################################################
 
