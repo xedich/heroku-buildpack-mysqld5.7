@@ -73,8 +73,6 @@ configure() {
 
   bin/mysqld --initialize-insecure  --datadir=data
   bin/mysql_ssl_rsa_setup --datadir=data
-
-  sed -i -r 's/(test:.*$)/\1\n  url: mysql2:\/\/user:password@localhost\/tempdb/' $BUILD_DIR/config/database.yml
 }
 # ------------------------------------------------------------
 
@@ -90,8 +88,6 @@ fi
 install
 
 configure
-
-env | grep DATABASE_URL
 
 ##############################################################
 
