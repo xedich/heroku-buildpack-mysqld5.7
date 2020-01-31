@@ -1,8 +1,4 @@
 #!/bin/sh
 
-if grep -q mysql $1/config/database.yml; then
-  echo "mysqld"
-  exit 0
-else
-  exit 1
-fi
+echo "MySQL Server"
+exit 0
