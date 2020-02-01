@@ -74,6 +74,8 @@ configure() {
   bin/mysqld --initialize-insecure  --datadir=data
   bin/mysql_ssl_rsa_setup --datadir=data
   
+  find . -not \( -name 'bin' -or -name 'lib'  \) -maxdepth 1 -mindepth 1 -exec rm -rf {} \;
+  find lib -type d -maxdepth 1 -mindepth 1 -exec rm -rf {} \;
   find bin -type f -not \( -name '*mysqld' -or -name '*mysqldump' -or -name '*mysql_ssl_rsa_setup' \) -delete
 }
 # ------------------------------------------------------------
