@@ -25,7 +25,8 @@ set -eo pipefail   # don't ignore exit codes when piping output
 
 
 # ------------------------------------------------------------
-VERSION=mysql-8.0.12-linux-glibc2.12-x86_64
+#VERSION=mysql-8.0.12-linux-glibc2.12-x86_64
+VERSION=mysql-5.7.29-linux-glibc2.12-x86_64
 # ------------------------------------------------------------
 
 
@@ -34,8 +35,9 @@ VERSION=mysql-8.0.12-linux-glibc2.12-x86_64
 download_and_unpack() {
 # ------------------------------------------------------------
   echo '       * Downloading source code'
-  curl -# -L -o "$TMP_DIR/$VERSION.tar.xz" "https://dev.mysql.com/get/Downloads/MySQL-8.0/$VERSION.tar.xz"
-
+  
+#  curl -# -L -o "$TMP_DIR/$VERSION.tar.xz" "https://dev.mysql.com/get/Downloads/MySQL-8.0/$VERSION.tar.xz"
+  curl -# -L -o "$TMP_DIR/$VERSION.tar.xz" "https://dev.mysql.com/get/Downloads/MySQL-5.7/$VERSION.tar.gz"
   echo '       * Unpacking'
   tar -C "$CACHE_DIR" -xJf "$TMP_DIR/$VERSION.tar.xz"
   cp "$BP_DIR"/lib/lib*.so* "$CACHE_DIR/$VERSION/lib"  
