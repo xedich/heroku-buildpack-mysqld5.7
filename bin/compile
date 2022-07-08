@@ -39,7 +39,7 @@ download_and_unpack() {
 #  curl -# -L -o "$TMP_DIR/$VERSION.tar.xz" "https://dev.mysql.com/get/Downloads/MySQL-8.0/$VERSION.tar.xz"
   curl -# -L -o "$TMP_DIR/$VERSION.tar.gz" "https://dev.mysql.com/get/Downloads/MySQL-5.7/$VERSION.tar.gz"
   echo '       * Unpacking'
-  tar -C "$CACHE_DIR" -xJf "$TMP_DIR/$VERSION.tar.gz"
+  tar xfvz "$TMP_DIR/$VERSION.tar.gz" -C "$CACHE_DIR"
   cp "$BP_DIR"/lib/lib*.so* "$CACHE_DIR/$VERSION/lib"  
 }
 # ------------------------------------------------------------
@@ -77,8 +77,8 @@ configure() {
   find lib -type d -maxdepth 1 -mindepth 1 -exec rm -rf {} \;
   find bin -type f -not \( -name '*mysqld' -or -name '*mysqldump' -or -name '*mysql_ssl_rsa_setup' -or -name '*mysql'  -or -name '*mysqladmin' \) -delete
   
-  bin/mysqld --initialize-insecure  --datadir=data
-  bin/mysql_ssl_rsa_setup --datadir=data
+  bin/mysqld --initialize-insecure --basedir=`pwd` --datadir=`pwd`/data
+  bin/mysql_ssl_rsa_setup --datadir=`pwd`/data
 }
 # ------------------------------------------------------------
 
